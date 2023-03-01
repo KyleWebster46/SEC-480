@@ -129,11 +129,15 @@ function Power($config){
     catch{
         Write-Host "Invalid folder: $folder"
     }
-
+    # powerstate variable
     $powerstate = Read-Host -Prompt "Powervm on or off"
+    #checks powerstate variable
     if($powerstate -eq "on"){
+        # starts VM
         Start-VM -VM $selected_vm -Confirm:$true -RunAsync
+        # If its set to off
     }elseif ($powerstate -eq "off"){
+        #Turns VM off
         Stop-VM -VM $selected_vm -Confirm:$true
     }
 }
