@@ -18,19 +18,19 @@ ModuleVersion = '0.0.1'
 # CompatiblePSEditions = @()
 
 # ID used to uniquely identify this module
-GUID = 'a69b822a-8dab-41e4-875d-fb0d32fc5842'
+GUID = '39e41b07-5fec-4a45-b8fe-fc60f290ab9e'
 
 # Author of this module
 Author = 'kyle'
 
 # Company or vendor of this module
-CompanyName = 'idklol'
+CompanyName = 'test'
 
 # Copyright statement for this module
 Copyright = '(c) kyle. All rights reserved.'
 
 # Description of the functionality provided by this module
-Description = 'Vsphere automation for 480'
+Description = 'vsphere automation'
 
 # Minimum version of the PowerShell engine required by this module
 # PowerShellVersion = ''
