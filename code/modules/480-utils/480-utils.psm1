@@ -38,7 +38,6 @@ function UIMENU($config){
         '2' {BaseClone($config)}
         '3' {Clear-Host Exit}
         '4' {Power($config)}
-        # Idea came from Paul Gleason
         default {Write-Host "Please select an option 1-4"}
 
     }
