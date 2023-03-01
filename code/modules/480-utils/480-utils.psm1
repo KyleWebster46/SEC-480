@@ -29,6 +29,7 @@ function UIMENU($config){
     [1] Linked clone
     [2] Base clone
     [3] Cancel
+    [4] PowerState
     "
     $menuoption = Read-Host
 
@@ -36,8 +37,9 @@ function UIMENU($config){
         '1' {ClonelinkVM($config)}
         '2' {BaseClone($config)}
         '3' {Clear-Host Exit}
+        '4' {Power($config)}
         # Idea came from Paul Gleason
-        Default {Write-Host "Please select an option 1-3"}
+        default {Write-Host "Please select an option 1-4"}
 
     }
 
@@ -105,8 +107,34 @@ function BaseClone($config) {
         $vm = Select-VM -folder $folderselect
     }
 
-    $vmName = Read-Host "Enter a new vm name:"
     $linkedname = "{0}.linked" -f $vm.name
-    $newVM = New-VM -Name $vmName -VM
+    $linkedvm = New-VM -LinkedClone -Name $linkedName -VM $vm -ReferenceSnapshot $config.snapshot -VMHost $congif.esxi_host -Datastore $config.datastore
+    $newvm = New-VM -Name "$vm.v3" -VM $linkedvm -VMHost $config.esxi_host -Datastore $config.datastore
+    $newvm | new-snapshot -Name "base"
+    $linkedvm | Remove-VM
 }
+function Power($config){
+    $selected_vm=$null
+    try{
+        $vms = Get-VM -Location $folder
+        $index = 1
+        foreach($vm in $vms){
+            Write-Host [$index] $vm.Name
+            $index+=1
+        }
+        $pick_index = Read-Host "which index number [x] are you picking?"
+        $selected_vm = $vms[$pick_index -1]
+        Write-Host "you picked" $selected_vm.Name
+   
+    }
+    catch{
+        Write-Host "Invalid folder: $folder"
+    }
 
+    $powerstate = Read-Host -Prompt "Powervm on or off"
+    if($powerstate -eq "on"){
+        Start-VM -VM $selected_vm -Confirm:$true -RunAsync
+    }elseif ($powerstate -eq "off"){
+        Stop-VM -VM $selected_vm -Confirm:$true
+    }
+}
