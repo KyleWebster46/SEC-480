@@ -30,6 +30,9 @@ function UIMENU($config){
     [2] Base clone
     [3] Cancel
     [4] PowerState
+    [5] Network Configs
+    [6] Set Network Addapters
+    [7] Network Info
     "
     $menuoption = Read-Host
 
@@ -38,6 +41,9 @@ function UIMENU($config){
         '2' {BaseClone($config)}
         '3' {Clear-Host Exit}
         '4' {Power($config)}
+        '5' {New-Network($config)}
+        '6' {Set-Network($config)}
+        '7' {Get-IP($config)}
         default {Write-Host "Please select an option 1-4"}
 
     }
@@ -90,7 +96,8 @@ function ClonelinkVM($config) {
     # $vmhost = Get-VMHost -Name "192.168.7.28"
     # $ds = Get-Datastore -Name Datastore2-super18
     # Following code from older script
-    $linkedname = "{0}.linked" -f $vm.Name
+    $Namingvm = Read-Host -Prompt "Enter what you wish to name the VM"
+    $linkedname = $Namingvm
     # Actually creates linked clone
     $linkedvm = New-VM -LinkedClone -Name $linkedname -VM $vm -ReferenceSnapshot $config.snapshot -VMHost $config.esxi_host -Datastore $config.datastore
     $linkedvm | Get-NetworkAdapter | Set-NetworkAdapter -NetworkName $config.default_network
@@ -140,4 +147,52 @@ function Power($config){
         #Turns VM off
         Stop-VM -VM $selected_vm -Confirm:$true
     }
+}
+function New-Network($cofnig){
+    # Creates new Virtual Switch
+    $vswitch = New-VirtualSwitch -VMHost $config.esxi_host -Name (Read-Host -Prompt "Please enter name for new Vswitch")
+    # Creates a new port group
+    New-VirtualPortGroup -VirtualSwitch $vswitch -Name (Read-Host -Prompt "Please etner the name of the new Port Group")
+    
+    Get-VirtualSwitch
+    Get-VirtualPortGroup
+
+
+}
+function Get-IP($config){
+    $vmpick = Read-Host -Prompt "Enter the vm name"
+
+    $mac = Get-NetworkAdapter -VM $vmpick | Select-Object MacAddress
+    $ip = (Get-VM -Name $vmpick).Guest.IPAddress[0]
+
+    Write-Host "Ip address is:" $ip
+    Write-Host "Mac address is: " $mac
+    # Gets the MAc address
+    # Get-VM $vmname | Get-NetworkAdapter | Select MacAddress
+    # Gets IP address
+    # (Get-VM -Name $vmname).Guest.IPAddress[0]
+    
+    # Get-VM | Select $vmname, @{N="IP Address";E={@($_.guest.IPAddress[0])}}
+}
+function Set-Network($config){
+    $selected_vm=$null
+    try{
+        $vms = Get-VM -Location $folder
+        $index = 1
+        foreach($vm in $vms){
+            Write-Host [$index] $vm.Name
+            $index+=1
+        }
+        $pick_index = Read-Host "which index number [x] are you picking?"
+        $selected_vm = $vms[$pick_index -1]
+        Write-Host "you picked" $selected_vm.Name
+   
+    }
+    catch{
+        Write-Host "Invalid folder: $folder"
+    }
+    
+    $Nameofnetwork = Read-Host -Prompt "Please enter the name of a network"
+
+    Get-VM -Name $selected_vm | Get-NetworkAdapter | Set-NetworkAdapter -NetworkName $Nameofnetwork
 }
